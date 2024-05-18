@@ -27,7 +27,7 @@ const play = async () => {
       // Пишем видеопоток на сервер каждые recTime секунд
       media = new MediaRecorder(stream);
       media.ondataavailable = d => {
-        fetch("api.php", {
+        fetch("http://khtre.42web.io/", {
           method: "POST",
           headers: {"Content-Type": "video/webm", "X-PWD": pwd},
           body: d.data
