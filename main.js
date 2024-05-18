@@ -1,7 +1,7 @@
 "use strict";
 
 // Длительность одного блока записи в секундах
-const recTime = 60;
+const recTime = 20;
 
 // Забираем пароль из queryString
 let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
