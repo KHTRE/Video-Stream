@@ -1,7 +1,7 @@
 "use strict";
 
 // Длительность одного блока записи в секундах
-const recTime = 60;
+const recTime = 20;
 
 // Забираем пароль из queryString
 let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
@@ -27,12 +27,11 @@ const play = async () => {
       // Пишем видеопоток на сервер каждые recTime секунд
       media = new MediaRecorder(stream);
       media.ondataavailable = d => {
-        console.log('fetched');
-         fetch("api.php", {
-            method: "POST",
-            headers: {"Content-Type": "video/webm", "X-PWD": pwd},
-            body: d.data
-         })
+        fetch("api.php", {
+          method: "POST",
+          headers: {"Content-Type": "video/webm", "X-PWD": pwd},
+          body: d.data
+        })
       };
       media.start(recTime * 1000);
    }
