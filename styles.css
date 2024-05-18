@@ -1,0 +1,11 @@
+html {
+    height: 100%;}
+ body {
+    height: 100%; margin: 0px; padding: 0px; background: black;
+    text-align: center;}
+ video {
+    display: block; max-height: 100%; max-width: 100%; margin: auto;}
+ button {
+    display: inline-block; width: 2em; margin-left: -1em;
+    position: absolute; bottom: 20px; left: 50%; background: none;
+    outline: none; border: none; font-size: 30px;  text-align: center;}
