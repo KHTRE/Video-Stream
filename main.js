@@ -6,7 +6,11 @@ const recTime = 5;
 // Забираем пароль из queryString
 let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
 
-const video = document.querySelector("video");
+// const video = document.querySelector("video");
+const video = document.getElementById("video1");
+console.log('video: ', video);
+const video1 = document.getElementById("video2");
+console.log('video1: ', video1);
 const button  = document.querySelector("button");
 
 let mediaFront, mediaBack, playFlag = false;
@@ -28,13 +32,17 @@ const play = async () => {
     });
 
     video.srcObject = streamFront;
+    video1.srcObject = streamBack;
     video.play();
+    video1.play();
 
     // Пишем видеопоток на сервер каждые recTime секунд
     mediaFront = new MediaRecorder(streamFront);
     console.log('mediaFront: ', mediaFront);
+
     mediaBack = new MediaRecorder(streamBack);
     console.log('mediaBack: ', mediaBack);
+
     mediaFront.ondataavailable = d => {
       console.log('post1: ', d.data);
       fetch("/api.php", {
@@ -53,6 +61,7 @@ const play = async () => {
         body: d.data
       })
     };
+
     mediaFront.start(recTime * 1000);
     mediaBack.start(recTime * 1000);
   } catch(err) {
@@ -70,6 +79,8 @@ const go = () => {
     button.innerHTML = "&#9210;";
     video.pause();
     video.srcObject = null;
+    video1.pause();
+    video1.srcObject = null;
     mediaFront.stop();      
     mediaBack.stop();      
   }
