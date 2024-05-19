@@ -34,7 +34,7 @@ const play = async () => {
     //   video:{facingMode:{exact:"user"}}, 
     //   audio:true,
     // });
-    console.log('stream2: ', stream2);
+    // console.log('stream2: ', stream2);
     alert('streams');
     video.srcObject = stream;
     video.play();
