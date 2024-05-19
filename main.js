@@ -38,7 +38,7 @@ const play = async () => {
     videoUser.srcObject = streamUser;
     console.log('videoUser: ', videoUser);
 
-    video.play();
+    // video.play();
     videoUser.play();
 
     // Пишем видеопоток на сервер каждые recTime секунд
