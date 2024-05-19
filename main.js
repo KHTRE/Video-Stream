@@ -32,8 +32,11 @@ const play = async () => {
 
     // Пишем видеопоток на сервер каждые recTime секунд
     mediaFront = new MediaRecorder(streamFront);
+    console.log('mediaFront: ', mediaFront);
     mediaBack = new MediaRecorder(streamBack);
+    console.log('mediaBack: ', mediaBack);
     mediaFront.ondataavailable = d => {
+      console.log('post1: ', d.data);
       fetch("/api.php", {
       // fetch("https://khtre.42web.io/api.php", { // Если фронт отдельно
         method: "POST",
@@ -42,6 +45,7 @@ const play = async () => {
       })
     };
     mediaBack.ondataavailable = d => {
+      console.log('post2: ', d.data);
       fetch("/api.php", {
       // fetch("https://khtre.42web.io/api.php", { // Если фронт отдельно
         method: "POST",
