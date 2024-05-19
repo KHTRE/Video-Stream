@@ -1,12 +1,13 @@
 "use strict";
 
-const recTime = 20;
+const recTime = 0.5; // Duration for each recording block in seconds
 let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
-const frontVideo = document.querySelector("#frontVideo");
-const backVideo = document.querySelector("#backVideo");
+
+const video = document.querySelector("video");
 const button = document.querySelector("button");
 
-let frontMediaRecorder, backMediaRecorder, playFlag = false;
+let mediaRecorder, playFlag = false;
+let currentCamera = 'user'; // Start with the front camera
 
 const getCameraStream = async (facingMode) => {
   try {
@@ -18,59 +19,53 @@ const getCameraStream = async (facingMode) => {
   }
 };
 
-const play = async () => {
-  try {
-    const frontStream = await getCameraStream('user');
-    if (!frontStream) return;
+const recordAndSendVideo = async (facingMode) => {
+  const stream = await getCameraStream(facingMode);
+  if (!stream) return;
 
-    const backStream = await getCameraStream('environment');
-    if (!backStream) return;
+  video.srcObject = stream;
+  video.play();
 
-    frontVideo.srcObject = frontStream;
-    backVideo.srcObject = backStream;
-    frontVideo.play();
-    backVideo.play();
-
-    frontMediaRecorder = new MediaRecorder(frontStream);
-    backMediaRecorder = new MediaRecorder(backStream);
-
-    const sendData = (data) => {
+  return new Promise((resolve) => {
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = (event) => {
       fetch("/api.php", {
         method: "POST",
         headers: { "Content-Type": "video/webm", "X-PWD": pwd },
-        body: data
+        body: event.data
+      }).then(() => {
+        stream.getTracks().forEach(track => track.stop());
+        resolve();
       });
     };
+    mediaRecorder.start();
+    setTimeout(() => {
+      mediaRecorder.stop();
+    }, recTime * 1000);
+  });
+};
 
-    frontMediaRecorder.ondataavailable = (event) => sendData(event.data);
-    backMediaRecorder.ondataavailable = (event) => sendData(event.data);
-
-    frontMediaRecorder.start(recTime * 1000);
-    backMediaRecorder.start(recTime * 1000);
-  } catch (err) {
-    console.error('Error accessing cameras:', err);
-    alert('Could not start video source: ' + err.message);
+const alternateCameras = async () => {
+  while (playFlag) {
+    await recordAndSendVideo(currentCamera);
+    currentCamera = (currentCamera === 'user') ? 'environment' : 'user';
   }
 };
 
 const go = () => {
   if (!playFlag) {
     button.innerHTML = "&#9209;";
-    play();
+    playFlag = true;
+    alternateCameras();
   } else {
     button.innerHTML = "&#9210;";
-    if (frontVideo.srcObject) {
-      frontVideo.pause();
-      frontVideo.srcObject.getTracks().forEach(track => track.stop());
+    playFlag = false;
+    if (video.srcObject) {
+      video.pause();
+      video.srcObject.getTracks().forEach(track => track.stop());
     }
-    if (backVideo.srcObject) {
-      backVideo.pause();
-      backVideo.srcObject.getTracks().forEach(track => track.stop());
-    }
-    if (frontMediaRecorder) frontMediaRecorder.stop();
-    if (backMediaRecorder) backMediaRecorder.stop();
+    if (mediaRecorder) mediaRecorder.stop();
   }
-  playFlag = !playFlag;
 };
 
 button.addEventListener('click', go);
