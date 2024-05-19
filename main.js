@@ -2,11 +2,13 @@
 
 // Длительность одного блока записи в секундах
 const recTime = 20;
+console.log('recTime: ', recTime);
 
 // Забираем пароль из queryString
 let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
 
 const video = document.querySelector("video");
+console.log('video: ', video);
 const videoUser = {...video};
 console.log('video: ', video);
 const button  = document.querySelector("button");
