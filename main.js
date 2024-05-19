@@ -8,6 +8,7 @@ let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
 
 const video = document.querySelector("video");
 const button = document.querySelector("button");
+console.log('button: ', button);
 
 let media, playFlag = false;
 
@@ -57,6 +58,7 @@ const play = async () => {
 
 // Обработчик нажатия кнопки Запись/Стоп
 const go = () => {
+  console.log('click')
   if (!playFlag) {
     button.innerHTML = "&#9209;";
     play();
@@ -70,4 +72,4 @@ const go = () => {
   playFlag = !playFlag;
 }
 
-button.addEventListener('click', go);
+button.addEventListener('click', go());
