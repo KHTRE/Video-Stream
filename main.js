@@ -57,7 +57,7 @@ const play = async () => {
 };
 
 // Обработчик нажатия кнопки Запись/Стоп
-const go = () => {
+function go() {
   console.log('click')
   if (!playFlag) {
     button.innerHTML = "&#9209;";
@@ -71,5 +71,3 @@ const go = () => {
   }
   playFlag = !playFlag;
 }
-
-button.addEventListener('click', go());
