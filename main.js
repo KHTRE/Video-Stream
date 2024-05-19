@@ -8,32 +8,54 @@ let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
 
 // Get the video elements and button
 const frontVideo = document.querySelector("#frontVideo");
+alert('frontVideo', frontVideo);
+
 const backVideo = document.querySelector("#backVideo");
+alert('backVideo', backVideo);
+
 const button = document.querySelector("button");
 
 let frontMediaRecorder, backMediaRecorder, playFlag = false;
+
+const getStream = async (constraints) => {
+  try {
+    return await navigator.mediaDevices.getUserMedia(constraints);
+  } catch (err) {
+    console.error('Error accessing camera:', err);
+    alert('Could not start video source: ' + err.message);
+    return null;
+  }
+};
 
 // Function to start video recording
 const play = async () => {
   try {
     // Check for mobile devices
     const isMobile = /Android|iPhone/i.test(navigator.userAgent);
-    const constraints = isMobile
-      ? [{ video: { facingMode: { exact: "user" } }, audio: true },
-         { video: { facingMode: { exact: "environment" } }, audio: true }]
-      : [{ video: true, audio: true }, { video: true, audio: true }];
+    const frontConstraints = isMobile
+      ? { video: { facingMode: { exact: "user" } }, audio: true }
+      : { video: true, audio: true };
+    const backConstraints = isMobile
+      ? { video: { facingMode: { exact: "environment" } }, audio: true }
+      : { video: true, audio: true };
 
-    // Get video streams from both cameras
-    const [frontStream, backStream] = await Promise.all([
-      navigator.mediaDevices.getUserMedia(constraints[0]),
-      navigator.mediaDevices.getUserMedia(constraints[1])
-    ]);
+    alert('POINT 0');
+
+    // Get front camera stream
+    const frontStream = await getStream(frontConstraints);
+    if (!frontStream) return;
+
+    // Get back camera stream
+    const backStream = await getStream(backConstraints);
+    if (!backStream) return;
 
     // Display the video streams to the user
     frontVideo.srcObject = frontStream;
     backVideo.srcObject = backStream;
     frontVideo.play();
     backVideo.play();
+
+    alert('POINT 1');
 
     // Set up media recorders for both streams
     frontMediaRecorder = new MediaRecorder(frontStream);
@@ -48,6 +70,7 @@ const play = async () => {
       });
     };
 
+    alert('POINT 2');
     // Handle data available events for both recorders
     frontMediaRecorder.ondataavailable = (event) => sendData(frontMediaRecorder, event.data);
     backMediaRecorder.ondataavailable = (event) => sendData(backMediaRecorder, event.data);
@@ -55,6 +78,7 @@ const play = async () => {
     // Start recording
     frontMediaRecorder.start(recTime * 1000);
     backMediaRecorder.start(recTime * 1000);
+    alert('POINT 3');
   } catch (err) {
     console.error('Error accessing cameras:', err);
     alert('Could not start video source: ' + err.message);
