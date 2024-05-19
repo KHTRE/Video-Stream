@@ -13,7 +13,7 @@ let media, playFlag = false;
 
 // Начать запись видео
 const play = async () => {
-  // try {
+  try {
     // Если клиент зашел со смартфона, включаем основную камеру
     console.log(navigator.userAgent);
     let c = /Android|iPhone/i.test(navigator.userAgent) 
@@ -21,12 +21,8 @@ const play = async () => {
       : {video:true, audio:true};
 
     // Получаем видеопоток с камеры и показываем его юзеру
-    let stream = await navigator.mediaDevices.getUserMedia(c);
-    let stream2 = await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{exact:"user"}}, 
-      audio:true,
-    });
-    console.log('stream2: ', stream2);
+    let stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+
     
     video.srcObject = stream;
     video.play();
@@ -42,9 +38,9 @@ const play = async () => {
       })
     };
     media.start(recTime * 1000);
-  // } catch(err) {
-  //   alert(err);
-  // }
+  } catch(err) {
+    alert(err);
+  }
 };
 
 // Обработчик нажатия кнопки Запись/Стоп
