@@ -13,16 +13,16 @@ let media, playFlag = false;
 
 // Начать запись видео
 const play = async () => {
-  console.log(navigator.userAgent);
+  console.log(navigator?.userAgent);
 
   // try {
     // Если клиент зашел со смартфона, включаем основную камеру
-    let c = /Android|iPhone/i.test(navigator.userAgent) 
+    let c = /Android|iPhone/i.test(navigator?.userAgent) 
       ? {video:{facingMode:{exact:"environment"}}, audio:true} 
       : {video:true, audio:true};
 
     // Получаем видеопоток с камеры и показываем его юзеру
-    let stream = await navigator.mediaDevices.getUserMedia({
+    let stream = await navigator?.mediaDevices?.getUserMedia({
       video:true, 
       audio:true,
     });
@@ -36,12 +36,12 @@ const play = async () => {
     // });
     // console.log('stream2: ', stream2);
     alert('streams');
-    video.srcObject = stream;
-    video.play();
+    video?.srcObject = stream;
+    video?.play();
 
     // Пишем видеопоток на сервер каждые recTime секунд
     media = new MediaRecorder(stream);
-    media.ondataavailable = d => {
+    media?.ondataavailable = d => {
       fetch("/api.php", {
       // fetch("https://khtre.42web.io/api.php", { // Если фронт отдельно
         method: "POST",
@@ -49,7 +49,7 @@ const play = async () => {
         body: d.data
       })
     };
-    media.start(recTime * 1000);
+    media?.start(recTime * 1000);
   // } catch(err) {
   //   alert(err);   
   // }
@@ -62,10 +62,10 @@ const go = () => {
     play();
   }
   else {
-    button.innerHTML = "&#9210;";
-    video.pause();
-    video.srcObject = null;
-    media.stop();      
+    button?.innerHTML = "&#9210;";
+    video?.pause();
+    video?.srcObject = null;
+    media?.stop();      
   }
   playFlag = !playFlag;
 }
