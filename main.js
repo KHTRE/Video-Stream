@@ -7,7 +7,7 @@ const recTime = 20;
 let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
 
 const video = document.querySelector("video");
-const button  = document.querySelector("button");
+const button = document.querySelector("button");
 
 let media, playFlag = false;
 
@@ -69,3 +69,5 @@ const go = () => {
   }
   playFlag = !playFlag;
 }
+
+button.addEventListener('click', go);
