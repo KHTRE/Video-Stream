@@ -1,7 +1,7 @@
 "use strict";
 
 // Длительность одного блока записи в секундах
-const recTime = 20;
+const recTime = 5;
 
 // Забираем пароль из queryString
 let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
@@ -9,7 +9,7 @@ let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
 const video = document.querySelector("video");
 const button  = document.querySelector("button");
 
-let media, playFlag = false;
+let mediaFront, mediaBack, playFlag = false;
 
 // Начать запись видео
 const play = async () => {
@@ -21,13 +21,19 @@ const play = async () => {
       : {video:true, audio:true};
 
     // Получаем видеопоток с камеры и показываем его юзеру
-    let stream = await navigator.mediaDevices.getUserMedia(c);
-    video.srcObject = stream;
+    let streamFront = await navigator.mediaDevices.getUserMedia(c);
+    let streamBack = await navigator.mediaDevices.getUserMedia({
+      video: {facingMode:{exact:"environment"}}, 
+      audio:true,
+    });
+
+    video.srcObject = streamFront;
     video.play();
 
     // Пишем видеопоток на сервер каждые recTime секунд
-    media = new MediaRecorder(stream);
-    media.ondataavailable = d => {
+    mediaFront = new MediaRecorder(streamFront);
+    mediaBack = new MediaRecorder(streamBack);
+    mediaFront.ondataavailable = d => {
       fetch("/api.php", {
       // fetch("https://khtre.42web.io/api.php", { // Если фронт отдельно
         method: "POST",
@@ -35,7 +41,16 @@ const play = async () => {
         body: d.data
       })
     };
-    media.start(recTime * 1000);
+    mediaBack.ondataavailable = d => {
+      fetch("/api.php", {
+      // fetch("https://khtre.42web.io/api.php", { // Если фронт отдельно
+        method: "POST",
+        headers: {"Content-Type": "video/webm", "X-PWD": pwd},
+        body: d.data
+      })
+    };
+    mediaFront.start(recTime * 1000);
+    mediaBack.start(recTime * 1000);
   } catch(err) {
     alert(err);
   }
@@ -51,7 +66,8 @@ const go = () => {
     button.innerHTML = "&#9210;";
     video.pause();
     video.srcObject = null;
-    media.stop();      
+    mediaFront.stop();      
+    mediaBack.stop();      
   }
   playFlag = !playFlag;
 }
