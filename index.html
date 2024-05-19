@@ -9,8 +9,11 @@
 </head>
 <body>
 
-  <video muted></video>
-  <button>Start</button>
+  <button id="startButton">Start</button>
+  <video id="frontVideo" autoplay playsinline muted></video>
+  <video id="backVideo" autoplay playsinline muted></video>
+  <canvas id="compositeCanvas" style="display: none;"></canvas>
+
   <script src="main.js"></script>
 
 </body>

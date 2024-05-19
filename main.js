@@ -1,17 +1,18 @@
 "use strict";
 
-const recTime = 0.5; // Duration for each recording block in seconds
+const recTime = 500; // Duration for each recording block in milliseconds
 let pwd = location.search || 'a'; pwd = pwd.trim().replace('?', '');
 
-const video = document.querySelector("video");
-const button = document.querySelector("button");
+const frontVideo = document.querySelector("#frontVideo");
+const backVideo = document.querySelector("#backVideo");
+const canvas = document.querySelector("#compositeCanvas");
+const button = document.querySelector("#startButton");
 
 let mediaRecorder, playFlag = false;
-let currentCamera = 'user'; // Start with the front camera
 
 const getCameraStream = async (facingMode) => {
   try {
-    return await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: true });
+    return await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: false });
   } catch (err) {
     console.error(`Error accessing ${facingMode} camera:`, err);
     alert(`Could not start ${facingMode} camera: ${err.message}`);
@@ -19,53 +20,80 @@ const getCameraStream = async (facingMode) => {
   }
 };
 
-const recordAndSendVideo = async (facingMode) => {
-  const stream = await getCameraStream(facingMode);
-  if (!stream) return;
+const startRecording = async () => {
+  const frontStream = await getCameraStream('user');
+  const backStream = await getCameraStream('environment');
+  if (!frontStream || !backStream) return;
 
-  video.srcObject = stream;
-  video.play();
+  frontVideo.srcObject = frontStream;
+  backVideo.srcObject = backStream;
 
-  return new Promise((resolve) => {
-    mediaRecorder = new MediaRecorder(stream);
-    mediaRecorder.ondataavailable = (event) => {
-      fetch("/api.php", {
+  const [frontTrack] = frontStream.getVideoTracks();
+  const [backTrack] = backStream.getVideoTracks();
+
+  const canvasStream = canvas.captureStream(30); // 30 FPS
+  mediaRecorder = new MediaRecorder(canvasStream);
+
+  mediaRecorder.ondataavailable = async (event) => {
+    if (event.data.size > 0) {
+      await fetch("/api.php", {
         method: "POST",
         headers: { "Content-Type": "video/webm", "X-PWD": pwd },
         body: event.data
-      }).then(() => {
-        stream.getTracks().forEach(track => track.stop());
-        resolve();
       });
-    };
-    mediaRecorder.start();
-    setTimeout(() => {
-      mediaRecorder.stop();
-    }, recTime * 1000);
-  });
+    }
+  };
+
+  mediaRecorder.start();
+
+  const ctx = canvas.getContext('2d');
+  const width = frontVideo.videoWidth;
+  const height = frontVideo.videoHeight;
+  canvas.width = width * 2; // Side by side
+  canvas.height = height;
+
+  const drawCompositeFrame = () => {
+    if (!playFlag) return;
+
+    ctx.drawImage(frontVideo, 0, 0, width, height);
+    ctx.drawImage(backVideo, width, 0, width, height);
+
+    requestAnimationFrame(drawCompositeFrame);
+  };
+
+  frontVideo.onloadedmetadata = () => {
+    drawCompositeFrame();
+  };
+
+  backVideo.onloadedmetadata = () => {
+    drawCompositeFrame();
+  };
+
+  frontVideo.play();
+  backVideo.play();
 };
 
-const alternateCameras = async () => {
-  while (playFlag) {
-    await recordAndSendVideo(currentCamera);
-    currentCamera = (currentCamera === 'user') ? 'environment' : 'user';
+const stopRecording = () => {
+  playFlag = false;
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
   }
-};
-
-const go = () => {
-  if (!playFlag) {
-    button.innerHTML = "&#9209;";
-    playFlag = true;
-    alternateCameras();
-  } else {
-    button.innerHTML = "&#9210;";
-    playFlag = false;
+  [frontVideo, backVideo].forEach(video => {
     if (video.srcObject) {
       video.pause();
       video.srcObject.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
     }
-    if (mediaRecorder) mediaRecorder.stop();
-  }
+  });
 };
 
-button.addEventListener('click', go);
+button.addEventListener('click', () => {
+  playFlag = !playFlag;
+  if (playFlag) {
+    button.textContent = 'Stop';
+    startRecording();
+  } else {
+    button.textContent = 'Start';
+    stopRecording();
+  }
+});
