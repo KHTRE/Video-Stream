@@ -22,14 +22,18 @@ const play = async () => {
       : {video:true, audio:true};
 
     // Получаем видеопоток с камеры и показываем его юзеру
-    let stream = await navigator.mediaDevices.getUserMedia(c);
+    let stream = await navigator.mediaDevices.getUserMedia({
+      video:true, 
+      audio:true,
+    });
+    // let stream = await navigator.mediaDevices.getUserMedia(c);
     console.log('stream: ', stream);
     alert('stream 1');
 
-    let stream2 = await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{exact:"user"}}, 
-      audio:true,
-    });
+    // let stream2 = await navigator.mediaDevices.getUserMedia({
+    //   video:{facingMode:{exact:"user"}}, 
+    //   audio:true,
+    // });
     console.log('stream2: ', stream2);
     alert('streams');
     video.srcObject = stream;
