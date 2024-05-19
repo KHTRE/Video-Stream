@@ -71,3 +71,5 @@ function go() {
   }
   playFlag = !playFlag;
 }
+
+button.addEventListener('click', go());
