@@ -15,7 +15,7 @@ let media, playFlag = false;
 const play = async () => {
   console.log(navigator.userAgent);
 
-  try {
+  // try {
     // Если клиент зашел со смартфона, включаем основную камеру
     let c = /Android|iPhone/i.test(navigator.userAgent) 
       ? {video:{facingMode:{exact:"environment"}}, audio:true} 
@@ -50,9 +50,9 @@ const play = async () => {
       })
     };
     media.start(recTime * 1000);
-  } catch(err) {
-    alert(err);   
-  }
+  // } catch(err) {
+  //   alert(err);   
+  // }
 };
 
 // Обработчик нажатия кнопки Запись/Стоп
